@@ -2,7 +2,21 @@ import logging
 import base64
 import json
 import azure.functions as func
+from PIL import Image
+from io import BytesIO
 
+def base64_pil(base64_str):
+    image = base64.b64decode(base64_str)
+    image = BytesIO(image)
+    image = Image.open(image)
+    return image
+
+def pil_base64(image):
+    img_buffer = BytesIO()
+    image.save(img_buffer, format='JPEG')
+    byte_data = img_buffer.getvalue()
+    base64_str = base64.b64encode(byte_data)
+    return base64_str
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Python HTTP trigger function processed a request.')
@@ -23,10 +37,31 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             pass
 
     if req_body:
+
+        sweaterImage = base64_pil(imageFile1)
+        empimage = base64_pil(imageFile2)
+
+        # sweaterImage.show()
+        # empimage.show()
+
+        sweaterImage = sweaterImage.resize((400,400))
+        sweater_size = sweaterImage.size
+        emp_size = empimage.size
+
+        mergedImage = Image.new('RGB', (sweater_size[0], sweater_size[1]+emp_size[1]), (250,250,250))
+        mergedImage.paste(empimage, (0,0))
+        mergedImage.paste(sweaterImage, (0,emp_size[1]))
+        mergedImage.show()
+
+        merged_base64 = pil_base64(mergedImage)
+
+        # print(merged_base64)
+
         return func.HttpResponse(
                 json.dumps({
                     "image1": imageFile1,
-                    "image2": imageFile2
+                    "image2": imageFile2,
+                    "mergedImage": merged_base64.decode('utf-8')
                     }))
         # return func.HttpResponse(f"Hello, {name}. This HTTP triggered function executed successfully.")
     else:
