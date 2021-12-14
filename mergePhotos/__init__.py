@@ -51,7 +51,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         mergedImage = Image.new('RGB', (sweater_size[0], sweater_size[1]+emp_size[1]), (250,250,250))
         mergedImage.paste(empimage, (0,0))
         mergedImage.paste(sweaterImage, (0,emp_size[1]))
-        mergedImage.show()
+        # mergedImage.show()
 
         merged_base64 = pil_base64(mergedImage)
 
